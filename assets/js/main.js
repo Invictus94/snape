@@ -1,83 +1,132 @@
-/**
-* Template Name: Arsha
-* Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
-* Updated: Feb 22 2025 with Bootstrap v5.3.3
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
-
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { db } from "./fStore.js";
 
 class Reservation {
   constructor() {
-    this.dateFrom = null;
-    this.dateTo = null;
-    this.timeFrom = null;
-    this.cameraName = null;
-    this.objectiveName = null;
-    this.clientName = null;
-    this.clientSurname = null;
-    this.clientTelefon = null;
-    this.clientMail = null;
-    this.clientDescription = null;
-    this.clientDelivery = null;
-    this.clientPayment = null;
+    this.df = null;   // dateFrom
+    this.dt = null;   // dateTo
+    this.tf = null;   // timeFrom
+    this.cn = null;   // cameraName
+    this.on = null;   // objectiveName
+    this.cln = null;  // clientName
+    this.cls = null;  // clientSurname
+    this.tel = null;  
+    this.mail = null;
+    this.desc = null; // clientDescription
+    this.del = null;  // delivery
+    this.pay = null;  // payment
+    this.dr = null;   // dateRequested
+    this.st = 0;      // status (0=requested,1=confirmed,2=cancelled,3=completed)
+    this.dls = null;  // dateLastStatusChange
+    this.usc = null;  // userStatusChanged
   }
 
+  // --- Getters ---
   getCameraName() {
-    return this.cameraName;
-  }
-  
-  getObjectiveName() {
-    return this.objectiveName;
+    return this.cn;
   }
 
+  getObjectiveName() {
+    return this.on;
+  }
+
+  // --- Checks ---
   dateAndTimeSet() {
-    return this.dateFrom !== null && this.dateTo !== null && this.timeFrom !== null;
+    return this.df !== null && this.dt !== null && this.tf !== null;
   }
 
   cameraSet() {
-    return this.cameraName !== null;
+    return this.cn !== null;
   }
-  
+
   objectiveSet() {
-    return this.objectiveName !== null;
+    return this.on !== null;
   }
 
   clientInfosSet() {
-    return this.clientName !== null && this.clientSurname !== null && this.clientTelefon !== null && this.clientMail !== null && this.clientDelivery !== null && this.clientPayment !== null;
+    return (
+      this.cln !== null &&
+      this.cls !== null &&
+      this.tel !== null &&
+      this.mail !== null &&
+      this.del !== null &&
+      this.pay !== null
+    );
   }
 
+  // --- Setters ---
+
   setDate(dateFrom, dateTo) {
-    this.dateFrom = dateFrom;
-    this.dateTo = dateTo;
+    this.df = dateFrom;
+    this.dt = dateTo;
   }
 
   setTime(timeFrom) {
-    this.timeFrom = timeFrom;
+    this.tf = timeFrom;
   }
 
   setCamera(cameraName) {
-    this.cameraName = cameraName;
+    this.cn = cameraName;
   }
 
   setObjective(objectiveName) {
-    this.objectiveName = objectiveName;
+    this.on = objectiveName;
   }
 
   setClientInfo(name, surname, telefon, mail, description) {
-    this.clientName = name;
-    this.clientSurname = surname;
-    this.clientTelefon = telefon;
-    this.clientMail = mail;
-    this.clientDescription = description;
+    this.cln = name;
+    this.cls = surname;
+    this.tel = telefon;
+    this.mail = mail;
+    this.desc = description;
   }
 
   setDeliveryAndPayment(delivery, payment) {
-    this.clientDelivery = delivery;
-    this.clientPayment = payment;
+    this.del = delivery;
+    this.pay = payment;
   }
+
+  // --- Pretvaranje u Firestore-friendly objekt ---
+  toFirestore() {
+    const obj = {};
+    for (const [key, value] of Object.entries(this)) {
+     obj[key] = value; 
+    }
+    return obj;
+  }
+
+  async saveReservation() {
+
+signInAnonymously(auth)
+  .then(async() => {
+    console.log("Anonimni login uspješan");
+
+      try {
+    this.dr = new Date();
+    const docRef = await addDoc(collection(db, "reservations"), this.toFirestore());
+    //console.log("Rezervacija spremljena s ID-jem: ", docRef.id);
+    console.log("Rezervacija spremljena");
+    
+    return true;
+  } catch (e) {
+    console.error("Greška kod spremanja:", e);
+    return false;
+  }
+
+  })
+  .catch((error) => {
+    console.error("Greška kod anonimnog logina:", error);
+        return false;
+
+  });
+
+
+}
 }
 
+
+const auth = getAuth();
 
 (function() {
   "use strict";
@@ -108,6 +157,7 @@ const calendarElement = document.getElementById('calendarElement');
 
 
   const checkoutBtn = document.getElementById("checkout-btn");
+  const sendBtn = document.getElementById("send-btn");
 
 
   const inputIds = [
@@ -147,29 +197,49 @@ inputIds.forEach(id => {
 // dateTo.addEventListener("touchstart", disableSelection); // mobilni uređaji
 
 
-function showConfirmation(rezervacija) {
-  document.getElementById("confirm-firstName").textContent = rezervacija.clientName;
-  document.getElementById("confirm-lastName").textContent = rezervacija.clientSurname;
-  document.getElementById("confirm-phone").textContent = rezervacija.clientTelefon;
-  document.getElementById("confirm-email").textContent = rezervacija.clientMail;
-  document.getElementById("confirm-pickup").textContent = rezervacija.clientDelivery;
-  document.getElementById("confirm-payment").textContent = rezervacija.clientPayment;
-  document.getElementById("confirm-dateFrom").textContent = rezervacija.dateFrom;
-  document.getElementById("confirm-dateTo").textContent = rezervacija.dateTo;
-  document.getElementById("confirm-time").textContent = rezervacija.timeFrom;
-  document.getElementById("confirm-camera").textContent = rezervacija.cameraName;
-  document.getElementById("confirm-objective").textContent = rezervacija.objectiveName;
-  document.getElementById("confirm-note").textContent = rezervacija.clientDescription || "–";
+function showConfirmation() {
+  document.getElementById("confirm-firstName").textContent = rezervacija.cln;
+  document.getElementById("confirm-lastName").textContent = rezervacija.cls;
+  document.getElementById("confirm-phone").textContent = rezervacija.tel;
+  document.getElementById("confirm-email").textContent = rezervacija.mail;
+  document.getElementById("confirm-pickup").textContent = rezervacija.del;
+  document.getElementById("confirm-payment").textContent = rezervacija.pay;
+  document.getElementById("confirm-dateFrom").textContent = rezervacija.df;
+  document.getElementById("confirm-dateTo").textContent = rezervacija.dt;
+  document.getElementById("confirm-time").textContent = rezervacija.tf;
+  document.getElementById("confirm-camera").textContent = rezervacija.cn;
+  document.getElementById("confirm-objective").textContent = rezervacija.on;
+  document.getElementById("confirm-note").textContent = rezervacija.desc || "–";
+}
 
-  // zadnji paragraf
-  let finalMsg = "💌 Nakon slanja naš tim će obraditi Vaš zahtjev te se javiti u što kraćem roku. ";
-  if (rezervacija.clientPayment === "uplatnica") {
+  sendBtn.addEventListener("click", function(e) {
+
+  e.preventDefault(); // spriječi automatsko slanje forme
+
+  rezervacija.saveReservation().then(success => {
+
+let finalMsg = "";
+
+    if (success) {
+
+  finalMsg = "💌 Nakon slanja naš tim će obraditi Vaš zahtjev te se javiti u što kraćem roku. ";
+  if (rezervacija.pay === "uplatnica") {
     finalMsg += "Račun će biti poslan na navedeni email. ";
   }
   finalMsg += "Ako imate dodatnih pitanja, slobodno nas kontaktirajte putem Instagrama ili emaila! 📬";
 
-  document.getElementById("final-message").textContent = finalMsg;
-}
+    } else {
+
+  finalMsg = "❌ Došlo je do greške prilikom slanja. Molimo pokušajte ponovno ili nas kontaktirajte putem društvenih mreža ili E-maila! 📬";
+
+    }
+
+      document.getElementById("final-message").textContent = finalMsg;
+
+
+  });
+  });
+
 
   checkoutBtn.addEventListener("click", function(e) {
 
@@ -219,7 +289,7 @@ if (missing.length > 0) {
   rezervacija.setClientInfo(firstName, lastName, phone, email, note);
   rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
 
- showConfirmation(rezervacija);
+ showConfirmation();
 
  scrollIntoView('review');
 
