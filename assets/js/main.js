@@ -1,5 +1,6 @@
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { izracunajDostavu } from "./distance.js";
 import { db } from "./fStore.js";
 
 class Reservation {
@@ -243,7 +244,20 @@ function showConfirmation() {
   document.getElementById("confirm-camera").textContent = rezervacija.cn;
   document.getElementById("confirm-objective").textContent = rezervacija.on;
   document.getElementById("confirm-note").textContent = rezervacija.desc || "–";
-  document.getElementById("sum-note").textContent = rezervacija.fs.toFixed(2) + "€";;
+
+
+const sumNoteEl = document.getElementById("sum-note");
+
+if (deliverySum && deliverySum > 0) {
+  sumNoteEl.innerHTML = `Trošak dostave: ${deliverySum.toFixed(2)} €<br>
+Najam opreme: ${dateSum.toFixed(2)} €<br>
+Ukupno: ${rezervacija.fs.toFixed(2)} €`;
+} else {
+  sumNoteEl.innerHTML = `Ukupno: ${rezervacija.fs.toFixed(2)} €`;
+}
+
+
+  
 }
 
   sendBtn.addEventListener("click", function(e) {
@@ -275,6 +289,9 @@ let finalMsg = "";
   });
 
 });
+
+
+
 
 
   checkoutBtn.addEventListener("click", function(e) {
@@ -326,7 +343,8 @@ if (missing.length > 0) {
   rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
 
 if (deliveryRadio && deliveryRadio.checked) {
-  deliverySum = 25;
+  deliverySum = izracunajDostavu("Zagreb");
+  console.log("Trošak dostave: " + deliverySum + "€");
 } else {
   deliverySum = 0;
 }
