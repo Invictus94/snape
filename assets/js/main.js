@@ -1,5 +1,5 @@
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { addDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { existsGrad, getGradovi, izracunajDostavu } from "./distance.js";
 import { db } from "./fStore.js";
 
@@ -138,7 +138,6 @@ class Reservation {
 saveReservation() {
   return signInAnonymously(auth)
     .then(async () => {
-      console.log("Anonimni login uspješan");
 
       try {
         this.dr = new Date();
@@ -152,11 +151,64 @@ saveReservation() {
 
     })
     .catch((error) => {
-      console.error("Greška kod anonimnog logina:", error);
+      console.error("Greška kod logina:", error);
       return false;
     });
 }
 
+canSend() {
+
+  return signInAnonymously(auth)
+    .then(async () => {
+
+      try {
+
+      if (!this.cln || !this.cls || (!this.tel && !this.mail)) return false;
+
+
+
+    const q = query(
+      collection(db, "reservations"),
+      where("mail", "==", this.mail),
+      where("nm", "==", `${this.cln} <> ${this.cls}`),
+      where("tel", "==", this.tel),
+      where("st", "==", 0)
+    );
+
+    const snapshot = await getDocs(q);
+
+// snapshot.docs.map(d => d.data())
+
+for (const doc of snapshot.docs) {
+  const data = doc.data();
+
+  if (data.dr) {
+    const drDate = data.dr.toDate ? data.dr.toDate() : new Date(data.dr);
+    const now = new Date();
+    const diffMinutes = (now - drDate) / 1000 / 60;
+
+    if (diffMinutes < 5) {
+      return false; // odmah izlazi iz canSend
+    }
+  }
+}
+
+    // console.log("Postojeće rezervacije:", snapshot.docs.map(d => d.data()));
+
+    return true;
+
+      } catch (e) {
+        console.error("Greška kod spremanja:", e);
+        return false;
+      }
+
+    })
+    .catch((error) => {
+      console.error("Greška kod logina:", error);
+      return false;
+    });
+
+  }
 
 }
 
@@ -359,29 +411,46 @@ Ukupno: ${rezervacija.fs.toFixed(2)} €`;
   e.preventDefault(); // spriječi automatsko slanje forme
 
 
+  rezervacija.canSend().then(can => {
+
+      console.log("Može li se poslati?", can);
+let finalMsg = "";
+
+
+    if (!can) {
+
+finalMsg = "📩 Zahtjev je već ranije poslan i trenutno je u obradi. ⏳ Dok traje obrada nije moguće poslati novi zahtjev. Ako imate dodatnih pitanja ili želite nadopuniti informacije, slobodno nas kontaktirajte putem društvenih mreža ili e-maila. 💌";
+        document.getElementById("final-message").textContent = finalMsg;
+
+    }
+      else{
+
   rezervacija.saveReservation().then(success => {
 
-let finalMsg = "";
 
     if (success) {
 
   finalMsg = "💌 Vaš zahtjev poslan! Naš tim će ga obraditi te se javiti u što kraćem roku. ";
   if (rezervacija.pay === "uplatnica") {
-    finalMsg += "Račun će biti poslan na navedeni email. ";
+    finalMsg += "Račun će biti poslan na navedeni e-mail. ";
   }
-  finalMsg += "Ako imate dodatnih pitanja, slobodno nas kontaktirajte putem društvenih mreža ili E-maila! 📬";
+  finalMsg += "Ako imate dodatnih pitanja, slobodno nas kontaktirajte putem društvenih mreža ili e-maila! 📬";
 
     } else {
 
-  finalMsg = "❌ Došlo je do greške prilikom slanja. Molimo pokušajte ponovno ili nas kontaktirajte putem društvenih mreža ili E-maila! 📬";
+  finalMsg = "❌ Došlo je do greške prilikom slanja. Molimo pokušajte ponovno ili nas kontaktirajte putem društvenih mreža ili e-maila! 📬";
 
     }
 
-      document.getElementById("final-message").textContent = finalMsg;
+
+        document.getElementById("final-message").textContent = finalMsg;
+
+  });
+}
+
 
 
   });
-
 });
 
 
@@ -890,6 +959,9 @@ function hideReview() {
   if (!reviewSection.classList.contains('collapse')) {
     reviewSection.classList.add('collapse');
   }
+
+        document.getElementById("final-message").textContent = "";
+
 }
 
 function scrollIntoView(element) {
