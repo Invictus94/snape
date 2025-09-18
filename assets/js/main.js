@@ -210,8 +210,129 @@ for (const doc of snapshot.docs) {
 
   }
 
+
+getCamerasAndObjectives(dateFrom, dateTo) {
+  return signInAnonymously(auth)
+    .then(async () => {
+      try {
+        // Pretvaramo datume u objekt za usporedbu
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+
+        // Firestore query: uzimamo sve rezervacije sa st = 1 (confirmed)
+        const q = query(
+          collection(db, "reservations"),
+          where("st", "==", 1),
+          where("df", "<=", to),
+          where("dt", ">=", from)
+        );
+
+        
+        const snapshot = await getDocs(q);
+        const result = [];
+               
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+
+          // if (data.df && data.dt) {
+          //   const dfDate = new Date(data.df);
+          //   const dtDate = new Date(data.dt);
+
+          //   // Provjeravamo da li postoji preklapanje s proslijeđenim periodom
+          //   if (dfDate <= to && dtDate >= from) {
+              result.push({ cn: data.cn, on: data.on });
+          //   }
+          // }
+
+          //console.log("Zauzete kamere i objektivi:", data.cn, data.on);
+
+        });
+
+
+        return result; // vraća array objekata { cn, on }
+
+      } catch (e) {
+        console.error("Greška kod dohvaćanja kamera i objektiva:", e);
+        return [];
+      }
+    })
+    .catch(error => {
+      console.error("Greška kod logina:", error);
+      return [];
+    });
 }
 
+
+
+}
+
+
+
+const cameras = [
+  {
+    path: "assets/img/steps/sonyA6000.png",
+    cameraName: "Sony A6000",
+    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
+    features: [
+      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
+      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
+      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
+    ]
+  },
+  {
+    path: "assets/img/steps/sonyA6000.png",
+    cameraName: "Sony A6000",
+    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
+    features: [
+      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
+      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
+      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
+    ]
+  },
+    {
+    path: "assets/img/steps/sonyA6000.png",
+    cameraName: "Sony A6000",
+    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
+    features: [
+      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
+      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
+      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
+    ]
+  }
+];
+
+const objectives = [
+  {
+    path: "assets/img/objectives/obj1.png",
+    name: "Sony FE 24-70mm f/2.8 GM",
+    features: {
+      Fokus: true,
+      Portreti: true,
+      Zoom: true
+    }
+  },
+  {
+    path: "assets/img/objectives/obj1.png",
+    name: "Sony FE 85mm f/1.8",
+    features: {
+      Fokus: false,
+      Portreti: true,
+      Zoom: true
+    }
+  },
+  {
+    path: "assets/img/objectives/obj1.png",
+    name: "Sony FE 16-35mm f/4",
+    features: {
+      Fokus: true,
+      Portreti: true,
+      Zoom: false
+    }
+  }
+];
+
+
+const rezervacija = new Reservation();
 
 
 const auth = getAuth();
@@ -219,9 +340,256 @@ const auth = getAuth();
 (function() {
   "use strict";
 
+
+
+
+
+
+function addObjectives(excluded = []) {
+  const container = document.getElementById("objectives-container");
+  if (!container) return;
+
+  // očisti postojeći sadržaj
+  container.innerHTML = "";
+
+  // filtriraj objectives prema excluded
+  const filteredObjectives = objectives.filter(obj => {
+    return !excluded.some(e => e === obj.name);
+  });
+
+  if (filteredObjectives.length === 0) return;
+
+  // Header row (prazne ćelije)
+  const headerRow = document.createElement("div");
+  headerRow.className = "row text-center fw-bold align-items-center mb-2";
+  for (let i = 0; i < 4; i++) {
+    const col = document.createElement("div");
+    col.className = i === 0 ? "col-2" : "col-3";
+    headerRow.appendChild(col);
+  }
+  container.appendChild(headerRow);
+
+  // Red: slike
+  const imgRow = document.createElement("div");
+  imgRow.className = "row text-center align-items-center mb-2";
+  const emptyCol = document.createElement("div");
+  emptyCol.className = "col-2 fw-bold";
+  imgRow.appendChild(emptyCol);
+
+  filteredObjectives.forEach(obj => {
+    const col = document.createElement("div");
+    col.className = "col-3";
+    const img = document.createElement("img");
+    img.src = obj.path;
+    img.className = "img-fluid";
+    img.style.maxWidth = "80px";
+    img.alt = obj.name;
+    col.appendChild(img);
+    imgRow.appendChild(col);
+  });
+  container.appendChild(imgRow);
+
+  // Red: ime
+  const nameRow = document.createElement("div");
+  nameRow.className = "row text-center align-items-center mb-2";
+  const emptyCol2 = document.createElement("div");
+  emptyCol2.className = "col-2 fw-bold";
+  nameRow.appendChild(emptyCol2);
+
+  filteredObjectives.forEach(obj => {
+    const col = document.createElement("div");
+    col.className = "col-3";
+    col.textContent = obj.name;
+    nameRow.appendChild(col);
+  });
+  container.appendChild(nameRow);
+
+  // Redovi sa feature-ima
+  const featureNames = Object.keys(filteredObjectives[0].features);
+
+  featureNames.forEach(featureName => {
+    const featureRow = document.createElement("div");
+    featureRow.className = "row align-items-center mb-2";
+
+    const colLabel = document.createElement("div");
+    colLabel.className = "col-2 fw-bold text-center";
+    colLabel.textContent = featureName;
+    featureRow.appendChild(colLabel);
+
+    filteredObjectives.forEach(obj => {
+      const col = document.createElement("div");
+      col.className = "col-3 d-flex justify-content-center";
+      const icon = document.createElement("i");
+      icon.className = obj.features[featureName] ? "bi bi-check icon-50 icon-check" : "bi bi-x icon-50 icon-x";
+      col.appendChild(icon);
+      featureRow.appendChild(col);
+    });
+
+    container.appendChild(featureRow);
+  });
+
+  // Red: dugmad
+  const btnRow = document.createElement("div");
+  btnRow.className = "row text-center align-items-center mb-2";
+  const emptyCol3 = document.createElement("div");
+  emptyCol3.className = "col-2 fw-bold";
+  btnRow.appendChild(emptyCol3);
+
+  filteredObjectives.forEach(obj => {
+    const col = document.createElement("div");
+    col.className = "col-3";
+    const btn = document.createElement("a");
+    btn.className = "buy-btn d-block mx-auto mt-3 text-center objectiveHolder";
+    btn.textContent = "Dodaj";
+    col.appendChild(btn);
+    btnRow.appendChild(col);
+  });
+
+  container.appendChild(btnRow);
+
+  const objectiveElements = document.querySelectorAll(".objectiveHolder");
+  const objectiveNames = document.querySelectorAll(".row:nth-child(3) .col-3");
+
+  objectiveElements.forEach((el, index) => {
+    el.addEventListener("click", () => {
+      objectiveElements.forEach(item => item.classList.remove("active"));
+      el.classList.add("active");
+      const objective = objectiveNames[index].textContent;
+      rezervacija.setObjective(objective);
+      scrollIntoView('contact');
+      hideReview();
+    });
+  });
+}
+
+
+
+function deleteAllObjectives() {
+    const container = document.getElementById("objectives-container");
+  if (!container) return;
+
+  // Izbriši sve postojeće elemente
+  container.innerHTML = "";
+}
+
+function deleteAllCameras() {
+    const container = document.getElementById("camera-container");
+  if (!container) return;
+
+  // Izbriši sve postojeće elemente
+  container.innerHTML = "";
+}
+
+function addCameras(excluded = []) {
+  const container = document.getElementById("camera-container");
+  if (!container) return;
+
+  deleteAllCameras(); // izbriši stare
+
+  const filteredCameras = cameras.filter(cam => {
+    return !excluded.some(e => e === cam.cameraName);
+  });
+
+  const descElement = document.getElementById("camera-desc");
+
+  if (filteredCameras.length === 0) {
+      descElement.textContent = "Nažalost trenutno nemamo dostupnih uređaja za odabrani period. 😞 Pokušaj odabrati drugo vrijeme!";
+          descElement.style.marginBottom = "7px";
+  }
+  else
+  {
+      descElement.textContent = "Ovi uređaji hvataju detalje koje tvoje oko možda promaši, ali srce pamti.";
+          descElement.style.marginBottom = "0px";
+  }
+
+
+  filteredCameras.forEach(camera => {
+    const col = document.createElement("div");
+    col.className = "col-lg-4";
+    col.setAttribute("data-aos", "fade-up");
+    col.setAttribute("data-aos-delay", "200");
+
+    const stepsItem = document.createElement("div");
+    stepsItem.className = "steps-item";
+
+    // Slika
+    const stepsImage = document.createElement("div");
+    stepsImage.className = "steps-image";
+    stepsImage.style.display = "flex";
+    stepsImage.style.alignItems = "center";
+    stepsImage.style.justifyContent = "center";
+
+    const img = document.createElement("img");
+    img.src = camera.path;
+    img.alt = camera.cameraName;
+    img.className = "img-fluid responsive-img";
+    img.loading = "lazy";
+
+    stepsImage.appendChild(img);
+
+    // Content
+    const stepsContent = document.createElement("div");
+    stepsContent.className = "steps-content";
+
+    const h3 = document.createElement("h3");
+    h3.textContent = camera.cameraName;
+
+    const p = document.createElement("p");
+    p.textContent = camera.cameraDescription;
+
+    const stepsFeatures = document.createElement("div");
+    stepsFeatures.className = "steps-features";
+
+    camera.features.forEach(f => {
+      const featureItem = document.createElement("div");
+      featureItem.className = "feature-item";
+
+      const i = document.createElement("i");
+      i.className = `bi ${f.icon}`;
+
+      const span = document.createElement("span");
+      span.textContent = f.cameraFeature;
+
+      featureItem.appendChild(i);
+      featureItem.appendChild(span);
+      stepsFeatures.appendChild(featureItem);
+    });
+
+    // Button
+    const btn = document.createElement("a");
+    btn.className = "buy-btn d-block mx-auto mt-3 text-center cameraHolder";
+    btn.textContent = "Odaberi";
+
+    stepsFeatures.appendChild(btn);
+    stepsContent.appendChild(h3);
+    stepsContent.appendChild(p);
+    stepsContent.appendChild(stepsFeatures);
+
+    stepsItem.appendChild(stepsImage);
+    stepsItem.appendChild(stepsContent);
+    col.appendChild(stepsItem);
+    container.appendChild(col);
+
+    // click event
+    const elements = document.querySelectorAll(".cameraHolder");
+    elements.forEach(el => {
+      el.addEventListener("click", () => {
+        elements.forEach(item => item.classList.remove("active"));
+        el.classList.add("active");
+        const stepsContent = el.closest(".steps-content");
+        const cameraName = stepsContent.querySelector("h3").textContent;
+        rezervacija.setCamera(cameraName);
+        scrollIntoView('extras');
+        hideReview();
+      });
+    });
+  });
+}
+
+
+
 /* Custom */
 
-const rezervacija = new Reservation();
 
   let startDate = null;
   let endDate = null;
@@ -385,8 +753,8 @@ if (rezervacija.pay.toLowerCase() === "preuzimanje") {
     paymentElement.textContent = rezervacija.pay;
 }
 
-document.getElementById("confirm-dateFrom").textContent = rezervacija.df;
-  document.getElementById("confirm-dateTo").textContent = rezervacija.dt;
+document.getElementById("confirm-dateFrom").textContent = formatDateToDDMMYYYY(rezervacija.df);
+  document.getElementById("confirm-dateTo").textContent = formatDateToDDMMYYYY(rezervacija.dt);
   document.getElementById("confirm-time").textContent = rezervacija.tf;
   document.getElementById("confirm-camera").textContent = rezervacija.cn;
   document.getElementById("confirm-objective").textContent = rezervacija.on;
@@ -413,7 +781,7 @@ Ukupno: ${rezervacija.fs.toFixed(2)} €`;
 
   rezervacija.canSend().then(can => {
 
-      console.log("Može li se poslati?", can);
+     // console.log("Može li se poslati?", can);
 let finalMsg = "";
 
 
@@ -519,7 +887,7 @@ if (missing.length > 0) {
 }
 
 // set standardna polja
-rezervacija.setDate(dateFrom.value, dateTo.value);
+rezervacija.setDate(startDate, endDate);
 rezervacija.setTime(timeSelect.value);
 rezervacija.setClientInfo(firstName, lastName, phone, email, note);
 rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
@@ -535,7 +903,7 @@ rezervacija.clearAdress();
 if (deliveryRadio && deliveryRadio.checked) {
   deliverySum = izracunajDostavu(nearCitySelect.value);
 
-  console.log("Trošak dostave: " + deliverySum + "€");
+ // console.log("Trošak dostave: " + deliverySum + "€");
 } else {
   deliverySum = 0;
 }
@@ -557,41 +925,6 @@ const year = parseInt(parts[2], 10);
 return new Date(year, month, day);
   }
 
-  const elements = document.querySelectorAll(".cameraHolder");
-  const objectiveElements = document.querySelectorAll(".objectiveHolder");
-const objectiveNames = document.querySelectorAll(".row:nth-child(3) .col-3"); 
-
-objectiveElements.forEach((el, index) => {
-      el.addEventListener("click", () => {
-      objectiveElements.forEach(item => item.classList.remove("active"));
-
-      el.classList.add("active");
-    const objective = objectiveNames[index].textContent;
-    rezervacija.setObjective(objective);
-
-    scrollIntoView('contact');
-  hideReview();
-
-    });
-  });
-
-  elements.forEach(el => {
-  el.addEventListener("click", () => {
-    elements.forEach(item => item.classList.remove("active"));
-
-    el.classList.add("active");
-
-
-    const stepsContent = el.closest(".steps-content");
-    // Dohvati <h3> unutar tog roditelja
-    const cameraName = stepsContent.querySelector("h3").textContent;
-rezervacija.setCamera(cameraName);
-
-scrollIntoView('extras');
-  hideReview();
-
-  });
-});
 
 dateFrom.addEventListener('click', () => {
   calendarElement.classList.remove('collapse');
@@ -610,6 +943,13 @@ dateTo.addEventListener('click', () => {
 document.getElementById("contact-form").addEventListener("submit", function(e) {
   e.preventDefault(); // spriječi pravo slanje forme
 });
+
+    function formatDateToDDMMYYYY(date) {
+  const d = date.getDate().toString().padStart(2, '0');
+  const m = (date.getMonth() + 1).toString().padStart(2, '0'); // mjeseci su 0-based
+  const y = date.getFullYear();
+  return `${d}.${m}.${y}`;
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   const monthNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
@@ -847,12 +1187,7 @@ let selectedDaysCount = 0;
 
   }
 
-    function formatDateToDDMMYYYY(date) {
-  const d = date.getDate().toString().padStart(2, '0');
-  const m = (date.getMonth() + 1).toString().padStart(2, '0'); // mjeseci su 0-based
-  const y = date.getFullYear();
-  return `${d}.${m}.${y}`;
-}
+
 
 function populateTimePicker(){
   timeSelect.innerHTML = '';
@@ -948,8 +1283,29 @@ timeSelect.addEventListener('change', ()=>{
 
 availabilityButton.addEventListener('click', ()=>{
   if(availabilityButton.classList.contains('active')){
-  scrollIntoView('camera');
    
+ rezervacija.getCamerasAndObjectives(startDate, endDate).then(data => {
+
+
+  const camerasArray = data.map(r => r.cn);
+const objectivesArray = data.map(r => r.on);
+
+//     console.log(data);
+// console.log("Rezervirane kamere u odabranom periodu:", camerasArray);
+// console.log("Rezervirani objektivi u odabranom periodu:", objectivesArray);
+
+  deleteAllCameras();
+  addCameras(camerasArray);
+
+  deleteAllObjectives();
+   addObjectives(objectivesArray);
+
+  scrollIntoView('camera');
+
+ });
+
+
+
 
   }
 })
