@@ -520,9 +520,9 @@
     </div>
 
     <div class="form-check">
-      <input class="form-check-input" type="radio" name="pickup_method" id="pickup-radio" value="osobno" required>
+      <input class="form-check-input" type="radio" name="pickup_method" id="pickup-radio" value="osobno" required checked>
       <label class="form-check-label" for="pickup-radio">
-        Osobno preuzimanje
+        Osobno preuzimanje - Svilajska ul. 31A, 31000, Osijek
       </label>
     </div>
   </div>
@@ -539,7 +539,7 @@
     </div>
 
     <div class="form-check">
-      <input class="form-check-input" type="radio" name="payment_method" id="bank-radio" value="uplatnica" required>
+      <input class="form-check-input" type="radio" name="payment_method" id="bank-radio" value="uplatnica" required checked>
       <label class="form-check-label" for="bank-radio">
         Putem uplatnice
       </label>
@@ -547,6 +547,31 @@
   </div>
 </div>
 
+
+
+<!-- Polja za dostavu -->
+<div id="delivery-fields" class="row gy-4 mt-2" style="display:none;">
+    <div class="col-md-6">
+        <label for="address-field" class="pb-2">Adresa <span class="text-danger">*</span></label>
+        <input type="text" name="address" id="address-field" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+        <label for="house-number-field" class="pb-2">Kućni broj <span class="text-danger">*</span></label>
+        <input type="text" name="house_number" id="house-number-field" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+        <label for="postal-code-field" class="pb-2">Poštanski broj <span class="text-danger">*</span></label>
+        <input type="text" name="postal_code" id="postal-code-field" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+        <label for="city-field" class="pb-2">Mjesto <span class="text-danger">*</span></label>
+        <input type="text" name="city" id="city-field" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+        <label for="near-city-field" class="pb-2">Grad u blizini <span class="text-danger">*</span></label>
+        <select name="nearcity" id="near-city-field" class="form-control" required></select>
+    </div>
+</div>
 
 
 

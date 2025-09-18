@@ -1,4 +1,4 @@
-export { izracunajDostavu };
+export { existsGrad, getGradovi, izracunajDostavu };
 
 const gradovi = [
   { naziv: "Bakar", udaljenost: 432 },
@@ -152,4 +152,23 @@ function izracunajDostavu(imeGrada) {
             // zaokruži na sljedeći cijeli 10 €
             return Math.ceil(trosak / 10) * 10;
     }
+}
+
+function getGradovi() {
+    return gradovi.map(g => g.naziv);
+}
+
+function existsGrad(imeGrada) {
+  const value = normalizeString(imeGrada);
+
+  const grad = gradovi.find(g => normalizeString(g.naziv) === value);
+
+  return grad ? grad.naziv : null;
+}
+
+function normalizeString(str) {
+  return str
+    .normalize("NFD")         // razdvaja osnovna slova i dijakritiku
+    .replace(/[\u0300-\u036f]/g, "") // uklanja dijakritiku
+    .toLowerCase();
 }

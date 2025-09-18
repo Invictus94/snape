@@ -1,6 +1,6 @@
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { izracunajDostavu } from "./distance.js";
+import { existsGrad, getGradovi, izracunajDostavu } from "./distance.js";
 import { db } from "./fStore.js";
 
 class Reservation {
@@ -100,6 +100,13 @@ class Reservation {
     this.ct = city;
   }
 
+  clearAdress() {
+    this.adr = null;
+    this.hn = null;
+    this.pn = null;
+    this.ct = null;
+  }
+
   setSum(finalSum) {
     this.fs = finalSum;
   }
@@ -111,7 +118,7 @@ class Reservation {
       tf: this.tf,
       cn: this.cn,
       on: this.on,
-      nm: this.cln && this.cls ? `${this.cln} ${this.cls}` : null,   // ime + prezime
+      nm: this.cln && this.cls ? `${this.cln} <> ${this.cls}` : null,   // ime + prezime
       tel: this.tel,
       mail: this.mail,
       desc: this.desc,
@@ -122,7 +129,7 @@ class Reservation {
       dls: this.dls,
       usc: this.usc,
       adr: (this.adr || this.hn || this.pn || this.ct) 
-        ? `${this.adr} ${this.hn}, ${this.pn} ${this.ct}` 
+        ? `${this.adr} <> ${this.hn} <> ${this.pn} <> ${this.ct}` 
         : null,
       fs: this.fs
     };
@@ -190,6 +197,8 @@ const calendarElement = document.getElementById('calendarElement');
   const checkoutBtn = document.getElementById("checkout-btn");
   const sendBtn = document.getElementById("send-btn");
 const deliveryRadio = document.getElementById("delivery-radio");
+const cashRadio = document.getElementById("cash-radio");
+const bankRadio = document.getElementById("bank-radio");
 
   const inputIds = [
   "first-name-field",
@@ -212,7 +221,20 @@ inputIds.forEach(id => {
     } else {
       // Za radio i checkbox
         el.addEventListener("change", () => {
-          // Poziv funkcije nakon provjere
+          
+          let delivery = id === "delivery-radio";
+          let pickup = id === "pickup-radio";
+
+if(delivery || pickup) {
+  toggleDeliveryFields();
+}
+
+if(pickup){
+                        cashRadio.disabled = false; 
+}
+
+    
+
           hideReview();
         });
     }
@@ -231,14 +253,87 @@ inputIds.forEach(id => {
 // dateTo.addEventListener("touchstart", disableSelection); // mobilni uređaji
 
 
+  const citySelect = document.getElementById("city-field");
+  const nearCitySelect = document.getElementById("near-city-field");
+
+
+nearCitySelect.addEventListener("change", function () {
+
+checkPaymentOptions(this.value);
+        }
+
+
+ // console.log("Odabrani grad:", this.value);
+);
+
+function checkPaymentOptions(grad) {
+  //  console.log("Odabrani grad:", grad);
+         let deliverySumm = izracunajDostavu(grad);
+
+          if (deliverySumm && deliverySumm > 40) {
+            cashRadio.checked = false;
+            bankRadio.checked = true;
+            cashRadio.disabled = true; 
+          }
+          else
+          {
+             cashRadio.disabled = false; 
+          }
+        }
+
+
+        // if(delivery) {
+
+        //     let deliverySumm = izracunajDostavu("Zagreb");
+
+        //   if (deliveryRadio.checked && deliverySumm > 40) {
+        //     cashRadio.checked = false;
+        //     bankRadio.checked = true;
+        //     cashRadio.disabled = true; 
+        //   }
+        //   else
+        //   {
+        //                 cashRadio.disabled = false; 
+        //   }
+        // }
+
+
+citySelect.addEventListener("input", () => {
+  
+let exist = existsGrad(citySelect.value);
+
+if(exist) {
+nearCitySelect.value = exist;
+checkPaymentOptions(exist);
+
+}});
+
+
 function showConfirmation() {
   document.getElementById("confirm-firstName").textContent = rezervacija.cln;
   document.getElementById("confirm-lastName").textContent = rezervacija.cls;
   document.getElementById("confirm-phone").textContent = rezervacija.tel;
   document.getElementById("confirm-email").textContent = rezervacija.mail;
-  document.getElementById("confirm-pickup").textContent = rezervacija.del;
-  document.getElementById("confirm-payment").textContent = rezervacija.pay;
-  document.getElementById("confirm-dateFrom").textContent = rezervacija.df;
+
+  const pickupElement = document.getElementById("confirm-pickup");
+
+if (rezervacija.del.toLowerCase() === "osobno") {
+    pickupElement.textContent = `${rezervacija.del} - Svilajska ul. 31A, 31000, Osijek`;
+} else {
+    pickupElement.textContent = rezervacija.del;
+}
+
+const paymentElement = document.getElementById("confirm-payment");
+
+if (rezervacija.pay.toLowerCase() === "preuzimanje") {
+    paymentElement.textContent = "prilikom preuzimanja";
+} else if (rezervacija.pay.toLowerCase() === "uplatnica") {
+    paymentElement.textContent = "putem uplatnice";
+} else {
+    paymentElement.textContent = rezervacija.pay;
+}
+
+document.getElementById("confirm-dateFrom").textContent = rezervacija.df;
   document.getElementById("confirm-dateTo").textContent = rezervacija.dt;
   document.getElementById("confirm-time").textContent = rezervacija.tf;
   document.getElementById("confirm-camera").textContent = rezervacija.cn;
@@ -255,7 +350,6 @@ Ukupno: ${rezervacija.fs.toFixed(2)} €`;
 } else {
   sumNoteEl.innerHTML = `Ukupno: ${rezervacija.fs.toFixed(2)} €`;
 }
-
 
   
 }
@@ -308,14 +402,23 @@ let finalMsg = "";
   const pickupMethod = document.querySelector('input[name="pickup_method"]:checked');
   const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
 
+
+
+  const addressField = document.getElementById("address-field").value.trim();
+  const houseNumberField = document.getElementById("house-number-field").value.trim();
+  const postalCodeField = document.getElementById("postal-code-field").value.trim();
+
+
+
+
   // provjera obaveznih polja
 let missing = [];
 
-  const fromDate = new Date(getDateFromInput(dateFrom.value));
-  const toDate = new Date(getDateFromInput(dateTo.value));
+const fromDate = new Date(getDateFromInput(dateFrom.value));
+const toDate = new Date(getDateFromInput(dateTo.value));
 
-let dateFromOK = isNaN(fromDate.getTime()) === false;
-let dateToOK = isNaN(toDate.getTime()) === false;
+let dateFromOK = !isNaN(fromDate.getTime());
+let dateToOK = !isNaN(toDate.getTime());
 
 // tekst za obavezna polja (ispuniti)
 if (!firstName) missing.push("Ispuniti ime ✏️");
@@ -332,18 +435,37 @@ if (!timeSelect) missing.push("Odabrati vrijeme ⏰");
 if (!rezervacija.getCameraName()) missing.push("Odabrati kameru 📸");
 if (!rezervacija.getObjectiveName()) missing.push("Odabrati objektiv 🔍");
 
+// dodatna provjera ako je dostava odabrana
+if (deliveryRadio.checked) {
+  if (!addressField) missing.push("Ispuniti adresu 🏠");
+  if (!houseNumberField) missing.push("Ispuniti kućni broj 🏠");
+  if (!postalCodeField) missing.push("Ispuniti poštanski broj 📮");
+  if (!citySelect.value) missing.push("Odabrati grad 🏙️");
+  if (!nearCitySelect.value) missing.push("Odabrati grad u blizini 🏙️");
+}
+
 if (missing.length > 0) {
   alert("Ups! 😅 Čini se da ste zaboravili:\n\n- " + missing.join("\n- ") + "\n\nMolimo ispunite ili odaberite sve kako bismo mogli nastaviti! 🚀");
   return;
 }
 
-    rezervacija.setDate(dateFrom.value, dateTo.value);
-  rezervacija.setTime(timeSelect.value);
-  rezervacija.setClientInfo(firstName, lastName, phone, email, note);
-  rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
+// set standardna polja
+rezervacija.setDate(dateFrom.value, dateTo.value);
+rezervacija.setTime(timeSelect.value);
+rezervacija.setClientInfo(firstName, lastName, phone, email, note);
+rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
+
+// set polja za dostavu samo ako je deliveryRadio.checked
+if (deliveryRadio.checked) {
+  rezervacija.setAddress(addressField, houseNumberField, postalCodeField, citySelect.value);
+} else {
+rezervacija.clearAdress();
+}
+
 
 if (deliveryRadio && deliveryRadio.checked) {
-  deliverySum = izracunajDostavu("Zagreb");
+  deliverySum = izracunajDostavu(nearCitySelect.value);
+
   console.log("Trošak dostave: " + deliverySum + "€");
 } else {
   deliverySum = 0;
@@ -430,7 +552,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextBtn = document.getElementById('nextBtn');
 
   let viewDate = new Date();
-
 
   function populateMonthYearControls(){
     monthSelect.innerHTML = '';
@@ -712,6 +833,39 @@ populateTimePicker();
   });
 });
 
+
+
+    // Funkcija za popunjavanje comboboxa gradovima
+    function populateGradovi() {
+        const select = document.getElementById("near-city-field");
+        select.innerHTML = ""; // očisti prethodne opcije
+
+             const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "";
+                    select.appendChild(option);
+
+        getGradovi().forEach(grad => {
+            const option = document.createElement("option");
+            option.value = grad;
+            option.textContent = grad;
+            select.appendChild(option);
+        });
+    }
+
+    // Prikaz/skrivanje polja prema odabranoj opciji
+    function toggleDeliveryFields() {
+
+const deliveryFields = document.getElementById('delivery-fields');
+
+
+        if (deliveryRadio.checked) {
+            deliveryFields.style.display = "flex";
+            populateGradovi();
+        } else {
+            deliveryFields.style.display = "none";
+        }
+    }
 
 
 const calendarControls = document.getElementById('calendarControls');
