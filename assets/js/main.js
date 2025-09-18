@@ -20,6 +20,11 @@ class Reservation {
     this.st = 0;      // status (0=requested,1=confirmed,2=cancelled,3=completed)
     this.dls = null;  // dateLastStatusChange
     this.usc = null;  // userStatusChanged
+    this.adr = null;  // clientAddress
+    this.hn = null;   // clientHouseNumber
+    this.pn = null;   // clientPostalNumber
+    this.ct = null;   // clientCity
+    this.fs = 0;   // finalSum
   }
 
   // --- Getters ---
@@ -87,43 +92,66 @@ class Reservation {
     this.pay = payment;
   }
 
-  // --- Pretvaranje u Firestore-friendly objekt ---
-  toFirestore() {
-    const obj = {};
-    for (const [key, value] of Object.entries(this)) {
-     obj[key] = value; 
-    }
-    return obj;
+  setAddress(address, houseNumber, postalNumber, city) {
+    this.adr = address;
+    this.hn = houseNumber;
+    this.pn = postalNumber;
+    this.ct = city;
   }
 
-  async saveReservation() {
+  setSum(finalSum) {
+    this.fs = finalSum;
+  }
 
-signInAnonymously(auth)
-  .then(async() => {
-    console.log("Anonimni login uspješan");
+ toFirestore() {
+    return {
+      df: this.df,
+      dt: this.dt,
+      tf: this.tf,
+      cn: this.cn,
+      on: this.on,
+      nm: this.cln && this.cls ? `${this.cln} ${this.cls}` : null,   // ime + prezime
+      tel: this.tel,
+      mail: this.mail,
+      desc: this.desc,
+      del: this.del,
+      pay: this.pay,
+      dr: this.dr,
+      st: this.st,
+      dls: this.dls,
+      usc: this.usc,
+      adr: (this.adr || this.hn || this.pn || this.ct) 
+        ? `${this.adr} ${this.hn}, ${this.pn} ${this.ct}` 
+        : null,
+      fs: this.fs
+    };
+  }
+
+saveReservation() {
+  return signInAnonymously(auth)
+    .then(async () => {
+      console.log("Anonimni login uspješan");
 
       try {
-    this.dr = new Date();
-    const docRef = await addDoc(collection(db, "reservations"), this.toFirestore());
-    //console.log("Rezervacija spremljena s ID-jem: ", docRef.id);
-    console.log("Rezervacija spremljena");
-    
-    return true;
-  } catch (e) {
-    console.error("Greška kod spremanja:", e);
-    return false;
-  }
-
-  })
-  .catch((error) => {
-    console.error("Greška kod anonimnog logina:", error);
+        this.dr = new Date();
+        await addDoc(collection(db, "reservations"), this.toFirestore());
+        console.log("Rezervacija spremljena");
+        return true;
+      } catch (e) {
+        console.error("Greška kod spremanja:", e);
         return false;
+      }
 
-  });
+    })
+    .catch((error) => {
+      console.error("Greška kod anonimnog logina:", error);
+      return false;
+    });
+}
 
 
 }
-}
+
 
 
 const auth = getAuth();
@@ -139,6 +167,8 @@ const rezervacija = new Reservation();
   let endDate = null;
   let nextToBeAssigned = null;
 
+  let dateSum = 0;
+  let deliverySum = 0;
 
   const dateFrom = document.getElementById('dateFrom');
 const dateTo = document.getElementById('dateTo');
@@ -158,7 +188,7 @@ const calendarElement = document.getElementById('calendarElement');
 
   const checkoutBtn = document.getElementById("checkout-btn");
   const sendBtn = document.getElementById("send-btn");
-
+const deliveryRadio = document.getElementById("delivery-radio");
 
   const inputIds = [
   "first-name-field",
@@ -180,7 +210,10 @@ inputIds.forEach(id => {
       el.addEventListener("input", hideReview);
     } else {
       // Za radio i checkbox
-      el.addEventListener("change", hideReview);
+        el.addEventListener("change", () => {
+          // Poziv funkcije nakon provjere
+          hideReview();
+        });
     }
   }
 });
@@ -210,11 +243,13 @@ function showConfirmation() {
   document.getElementById("confirm-camera").textContent = rezervacija.cn;
   document.getElementById("confirm-objective").textContent = rezervacija.on;
   document.getElementById("confirm-note").textContent = rezervacija.desc || "–";
+  document.getElementById("sum-note").textContent = rezervacija.fs.toFixed(2) + "€";;
 }
 
   sendBtn.addEventListener("click", function(e) {
 
   e.preventDefault(); // spriječi automatsko slanje forme
+
 
   rezervacija.saveReservation().then(success => {
 
@@ -222,11 +257,11 @@ let finalMsg = "";
 
     if (success) {
 
-  finalMsg = "💌 Nakon slanja naš tim će obraditi Vaš zahtjev te se javiti u što kraćem roku. ";
+  finalMsg = "💌 Vaš zahtjev poslan! Naš tim će ga obraditi te se javiti u što kraćem roku. ";
   if (rezervacija.pay === "uplatnica") {
     finalMsg += "Račun će biti poslan na navedeni email. ";
   }
-  finalMsg += "Ako imate dodatnih pitanja, slobodno nas kontaktirajte putem Instagrama ili emaila! 📬";
+  finalMsg += "Ako imate dodatnih pitanja, slobodno nas kontaktirajte putem društvenih mreža ili E-maila! 📬";
 
     } else {
 
@@ -238,7 +273,8 @@ let finalMsg = "";
 
 
   });
-  });
+
+});
 
 
   checkoutBtn.addEventListener("click", function(e) {
@@ -288,6 +324,14 @@ if (missing.length > 0) {
   rezervacija.setTime(timeSelect.value);
   rezervacija.setClientInfo(firstName, lastName, phone, email, note);
   rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
+
+if (deliveryRadio && deliveryRadio.checked) {
+  deliverySum = 25;
+} else {
+  deliverySum = 0;
+}
+
+  rezervacija.setSum(dateSum + deliverySum);
 
  showConfirmation();
 
@@ -565,6 +609,7 @@ let selectedDaysCount = 0;
     
     selectedDaysCount = dayArray.length;
 
+    dateSum = 0;
     // Izračun cijene po danu (preskoči zadnji dan)
     dayArray.forEach((c, i) => {
       const d = new Date(c.dataset.date);
@@ -585,6 +630,9 @@ let selectedDaysCount = 0;
       if(dayOfWeek === 0 || dayOfWeek === 6) price = 100;
 
       meta.textContent = price + '€';
+
+      dateSum += price;
+
       }
 
     });
@@ -660,6 +708,7 @@ timeSelect.addEventListener('change', ()=>{
 availabilityButton.addEventListener('click', ()=>{
   if(availabilityButton.classList.contains('active')){
   scrollIntoView('camera');
+   
 
   }
 })
