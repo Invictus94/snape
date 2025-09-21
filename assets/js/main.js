@@ -270,41 +270,31 @@ getCamerasAndObjectives(dateFrom, dateTo) {
 
 const cameras = [
   {
-    path: "assets/img/steps/sonyA6000.png",
-    cameraName: "Sony A6000",
-    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
+    path: "assets/img/steps/nikonz30.png",
+    cameraName: "Nikon Z30",
+    cameraDescription: "Kompaktan i lagan fotoaparat dizajniran za kreativce u pokretu – donosi vrhunsku kvalitetu slike i besprijekorno snimanje videa, bilo da kreiraš sadržaj za društvene mreže, putopisne vlogove ili svakodnevne uspomene. Intuitivno rukovanje i pametna povezivost omogućuju ti da svaki trenutak podijeliš odmah, jasno i bez kompromisa.",
     features: [
-      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
-      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
-      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
+          { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
+          { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" },
+          { icon: "bi-film", cameraFeature: "4K UHD video bez cropa" }
     ]
   },
   {
-    path: "assets/img/steps/sonyA6000.png",
-    cameraName: "Sony A6000",
-    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
-    features: [
-      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
-      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
-      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
-    ]
-  },
-    {
-    path: "assets/img/steps/sonyA6000.png",
-    cameraName: "Sony A6000",
-    cameraDescription: "Kompaktan i brz fotoaparat koji hvata svaki trenutak s nevjerojatnom jasnoćom – od spontanih selfija do avantura na otvorenom, a jednostavno povezivanje znači da svoje uspomene možeš odmah podijeliti.",
-    features: [
-      { icon: "bi-camera-fill", cameraFeature: "Maksimalne kvalitete fotografija" },
-      { icon: "bi-phone-fill", cameraFeature: "Selfie ekran" },
-      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" }
+    path: "assets/img/steps/nikonz50.png",
+    cameraName: "Nikon Z50",
+      cameraDescription: "Moćan fotoaparat koji uvijek ide uz tebe – bilo na putovanjima, u šetnji gradom ili dok bilježiš svakodnevne trenutke. Kombinira iznimnu kvalitetu slike i 4K video s praktičnim selfie ekranom i jednostavnom povezivošću, pa je jednako dobar za stvaranje uspomena kao i za dijeljenje sadržaja na društvenim mrežama.",   
+         features: [
+      { icon: "bi-camera-fill", cameraFeature: "Vrhunska fotografija" },
+      { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" },
+      { icon: "bi-stars", cameraFeature: "Odlično snimanje pri slabom svjetlu" }
     ]
   }
 ];
 
 const objectives = [
   {
-    path: "assets/img/objectives/obj1.png",
-    name: "Sony FE 24-70mm f/2.8 GM",
+    path: "assets/img/objectives/16_50.png",
+    name: "NIKKOR Z DX 16-50mm F3.5-6.3 VR",
     features: {
       Fokus: true,
       Portreti: true,
@@ -312,17 +302,8 @@ const objectives = [
     }
   },
   {
-    path: "assets/img/objectives/obj1.png",
-    name: "Sony FE 85mm f/1.8",
-    features: {
-      Fokus: false,
-      Portreti: true,
-      Zoom: true
-    }
-  },
-  {
-    path: "assets/img/objectives/obj1.png",
-    name: "Sony FE 16-35mm f/4",
+    path: "assets/img/objectives/24.png",
+    name: "NIKKOR Z DX 24mm F1.7",
     features: {
       Fokus: true,
       Portreti: true,
@@ -738,7 +719,7 @@ function showConfirmation() {
   const pickupElement = document.getElementById("confirm-pickup");
 
 if (rezervacija.del.toLowerCase() === "osobno") {
-    pickupElement.textContent = `${rezervacija.del} - Svilajska ul. 31A, 31000, Osijek`;
+    pickupElement.textContent = `${rezervacija.del} - Kapucinska 35, 31000, Osijek`;
 } else {
     pickupElement.textContent = rezervacija.del;
 }
@@ -1192,7 +1173,7 @@ let selectedDaysCount = 0;
 function populateTimePicker(){
   timeSelect.innerHTML = '';
   const startHour = 8;
-  const endHour = 18;
+  const endHour = 14;
 
   for(let h = startHour; h <= endHour; h++){
     ['00','30'].forEach(min=>{
