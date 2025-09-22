@@ -440,9 +440,12 @@ function addObjectives(excluded = []) {
   filteredObjectives.forEach(obj => {
     const col = document.createElement("div");
     col.className = "col-3";
+
     const btn = document.createElement("a");
     btn.className = "buy-btn d-block mx-auto mt-3 text-center objectiveHolder";
     btn.textContent = "Dodaj";
+    btn.style.cursor = "pointer";
+
     col.appendChild(btn);
     btnRow.appendChild(col);
   });
@@ -541,6 +544,7 @@ function addCameras(excluded = []) {
 
     const stepsFeatures = document.createElement("div");
     stepsFeatures.className = "steps-features";
+stepsFeatures.style.cursor = "pointer";
 
     camera.features.forEach(f => {
       const featureItem = document.createElement("div");

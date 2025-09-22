@@ -4,7 +4,6 @@ Uvjeti i odredbe za rezervaciju i najam opreme
 
 1.1. Proces rezervacije:
 Za rezervaciju opreme morate dovršiti proces rezervacije na našoj web stranici. To uključuje odabir željene opreme, datuma najma i unos potrebnih podataka.
-
 1.2. Potvrda rezervacije:
 Rezervacija će biti provjerena u razumnom roku i potvrđena. Rezervacija se ne smatra dovršenom dok je ne potvrdimo.
 
@@ -12,7 +11,6 @@ Rezervacija će biti provjerena u razumnom roku i potvrđena. Rezervacija se ne 
 
 2.1. Trajanje najma:
 Razdoblje najma počinje na dan kada primite opremu, a završava na dan kada je vratite na našu dogovorenu lokaciju.
-
 2.2. Produženje:
 Ako želite produžiti razdoblje najma, morate zatražiti produženje unaprijed. Produženje ovisi o dostupnosti opreme i dodatnim troškovima.
 
@@ -20,13 +18,10 @@ Ako želite produžiti razdoblje najma, morate zatražiti produženje unaprijed.
 
 3.1. Naknade za najam:
 Slažete se platiti navedene naknade za najam, uključujući dnevne, tjedne ili mjesečne cijene najma, kao i sve primjenjive poreze ili naknade.
-
 3.2. Sigurnosni depozit:
 Može se zahtijevati sigurnosni depozit kako bi se pokrili eventualna oštećenja, gubitak ili kašnjenje u vraćanju opreme.
-
 3.3. Način plaćanja:
 Morate osigurati valjani način plaćanja, poput kreditne kartice, za naknade najma i sigurnosni depozit. Naplata se izvršava prilikom preuzimanja opreme ili putem uplatnice prije preuzimanja.
-
 3.4. Naknade za kašnjenje:
 Odgovorni ste za vraćanje opreme na dogovoreni datum i vrijeme. Kašnjenje može rezultirati dodatnim troškovima.
 
@@ -34,10 +29,8 @@ Odgovorni ste za vraćanje opreme na dogovoreni datum i vrijeme. Kašnjenje mož
 
 4.1. Održavanje i briga:
 Slažete se da ćete tijekom najma opremu koristiti profesionalno i odgovorno te da ćete o njoj voditi razumnu brigu.
-
 4.2. Gubitak ili oštećenje:
 Odgovorni ste za bilo kakav gubitak, oštećenje ili krađu opreme tijekom razdoblja najma. Procijenit ćemo i naplatiti potrebne popravke ili zamjenu.
-
 4.3. Ograničenja korištenja:
 Oprema se ne smije koristiti u ilegalne ili zabranjene svrhe.
 
@@ -45,7 +38,6 @@ Oprema se ne smije koristiti u ilegalne ili zabranjene svrhe.
 
 5.1. Preuzimanje opreme:
 Oprema se mora preuzeti na dogovorenoj lokaciji. Može se zahtijevati valjana identifikacija i potpisani ugovor o najmu.
-
 5.2. Povrat opreme:
 Oprema se mora vratiti na dogovorenu lokaciju u dogovoreno vrijeme. Nepoštivanje može rezultirati naknadama za kašnjenje.
 
@@ -53,23 +45,20 @@ Oprema se mora vratiti na dogovorenu lokaciju u dogovoreno vrijeme. Nepoštivanj
 
 6.1. Otkazivanje:
 Otkazivanje rezervacije moguće je najkasnije 24 sata prije početka rezervacije. U suprotnom, povrat novca je moguć, ali nama ostaje iznos jednog cijelog dana najma, a najmoprimcu ide ostatak.
-
 6.2. Povrat novca:
 Prava na povrat novca ovise o našoj politici otkazivanja, uključujući moguću nepopustivu naknadu za rezervaciju.
 
-7. Odgovornost i obeštećenje
+7. Odgovornost i naknada štete
 
 7.1. Odgovornost:
 Nismo odgovorni za bilo kakve ozljede, gubitke ili štete nastale tijekom korištenja iznajmljene opreme.
-
-7.2. Obeštećenje:
-Slažete se obeštetiti nas i osloboditi od bilo kakvih potraživanja, odgovornosti ili troškova koji proizlaze iz korištenja opreme.
+7.2. Naknada štete:
+Slažete se naknadom štete nas zaštititi i osloboditi od svih potraživanja, odgovornosti i troškova koji proizlaze iz korištenja opreme.
 
 8. Promjena uvjeta
 
 8.1. Izmjene:
 Zadržavamo pravo izmjene ovih uvjeta u bilo kojem trenutku. Sve promjene bit će objavljene na web stranici i stupaju na snagu odmah nakon objave.
-
 Korištenjem rezervacije ili najmom opreme potvrđujete da ste pročitali, razumjeli i prihvaćate ove uvjete. Nepoštivanje može rezultirati otkazivanjem rezervacije i dodatnim troškovima.
 
 Za pitanja ili dodatne informacije kontaktirajte nas na društvenim mrežama ili putem e-maila.
