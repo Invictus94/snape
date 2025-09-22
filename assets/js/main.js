@@ -19,13 +19,15 @@ class Reservation {
     this.del = null;  // delivery (0=osobno,1=dostava)
     this.pay = null;  // payment (0=preuzimanje,1=uplatnica)
     this.dr = null;   // dateRequested
-    this.st = 0;      // status (0=requested,1=confirmed,2=cancelled,3=completed)
+    this.st = 0;      // status (0=requested,1=confirmed,2=cancelled,3=completed, 4=deleted)
     this.dls = null;  // dateLastStatusChange
     this.uc = null;  // userChanged
     this.adr = null;  // clientAddress
     this.hn = null;   // clientHouseNumber
     this.pn = null;   // clientPostalNumber
     this.ct = null;   // clientCity
+    this.sd = 0;   // sumDelivery
+    this.sr = 0;   // sumRent
     this.fs = 0;   // finalSum
     this.pe = 0;   // postEditing (0=no,1=yes)
   }
@@ -109,8 +111,10 @@ class Reservation {
     this.ct = null;
   }
 
-  setSum(finalSum) {
-    this.fs = finalSum;
+  setSum(deliverySum, rentSum) {
+    this.sd = deliverySum;
+    this.sr = rentSum;
+    this.fs = deliverySum + rentSum;
   }
 
  setPostEditing(value) {
@@ -136,6 +140,8 @@ class Reservation {
       adr: (this.adr || this.hn || this.pn || this.ct) 
         ? `${this.adr} <> ${this.hn} <> ${this.pn} <> ${this.ct}` 
         : null,
+      sd: this.sd,
+      sr: this.sr,
       fs: this.fs,
       uc: this.uc,
       pe: this.pe
@@ -830,8 +836,8 @@ document.getElementById("confirm-dateFrom").textContent = formatDateToDDMMYYYY(r
 const sumNoteEl = document.getElementById("sum-note");
 
 if (deliverySum && deliverySum > 0) {
-  sumNoteEl.innerHTML = `Trošak dostave: ${deliverySum.toFixed(2)} €<br>
-Najam opreme: ${dateSum.toFixed(2)} €<br>
+  sumNoteEl.innerHTML = `Trošak dostave: ${rezervacija.sd.toFixed(2)} €<br>
+Najam opreme: ${rezervacija.sr.toFixed(2)} €<br>
 Ukupno: ${rezervacija.fs.toFixed(2)} €`;
 } else {
   sumNoteEl.innerHTML = `Ukupno: ${rezervacija.fs.toFixed(2)} €`;
@@ -985,7 +991,7 @@ if (deliveryRadio && deliveryRadio.checked) {
   deliverySum = 0;
 }
 
-  rezervacija.setSum(dateSum + deliverySum);
+  rezervacija.setSum(deliverySum, dateSum);
 
  showConfirmation();
 
