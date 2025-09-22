@@ -1000,6 +1000,8 @@ function dateFromClick(){
   calendarElement.classList.remove('collapse');
   nextToBeAssigned = 'start';
   hideReview();
+
+  scrollIntoView('calendar');
 }
 
 dateFrom.addEventListener('click', () => {
@@ -1010,6 +1012,7 @@ dateTo.addEventListener('click', () => {
   calendarElement.classList.remove('collapse');
   nextToBeAssigned = 'end';
   hideReview();
+  scrollIntoView('calendar');
 
 });
 
