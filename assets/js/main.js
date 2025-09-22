@@ -1,5 +1,5 @@
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { addDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { addDoc, collection, getDocs, query, Timestamp, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { existsGrad, getGradovi, izracunajDostavu } from "./distance.js";
 import { db } from "./fStore.js";
 import AppConfig from "./variables.js";
@@ -16,12 +16,12 @@ class Reservation {
     this.tel = null;  
     this.mail = null;
     this.desc = null; // clientDescription
-    this.del = null;  // delivery
-    this.pay = null;  // payment
+    this.del = null;  // delivery (0=osobno,1=dostava)
+    this.pay = null;  // payment (0=preuzimanje,1=uplatnica)
     this.dr = null;   // dateRequested
     this.st = 0;      // status (0=requested,1=confirmed,2=cancelled,3=completed)
     this.dls = null;  // dateLastStatusChange
-    this.usc = null;  // userStatusChanged
+    this.uc = null;  // userChanged
     this.adr = null;  // clientAddress
     this.hn = null;   // clientHouseNumber
     this.pn = null;   // clientPostalNumber
@@ -66,8 +66,8 @@ class Reservation {
   // --- Setters ---
 
   setDate(dateFrom, dateTo) {
-    this.df = dateFrom;
-    this.dt = dateTo;
+    this.df = this.toFirestoreTimestamp(dateFrom);
+    this.dt = this.toFirestoreTimestamp(dateTo);
   }
 
   setTime(timeFrom) {
@@ -133,21 +133,30 @@ class Reservation {
       dr: this.dr,
       st: this.st,
       dls: this.dls,
-      usc: this.usc,
       adr: (this.adr || this.hn || this.pn || this.ct) 
         ? `${this.adr} <> ${this.hn} <> ${this.pn} <> ${this.ct}` 
         : null,
       fs: this.fs,
+      uc: this.uc,
       pe: this.pe
     };
   }
+
+  toFirestoreTimestamp(date) {
+    if (!date) return null;
+    if (!(date instanceof Date)) {
+        console.warn("toFirestoreTimestamp: očekivan Date, dobiveno:", date);
+        return date;
+    }
+    return Timestamp.fromDate(date);
+}
 
 saveReservation() {
   return signInAnonymously(auth)
     .then(async () => {
 
       try {
-        this.dr = new Date();
+        this.dr = this.toFirestoreTimestamp(new Date());
         await addDoc(collection(db, "reservations"), this.toFirestore());
         console.log("Rezervacija spremljena");
         return true;
@@ -190,7 +199,7 @@ for (const doc of snapshot.docs) {
   const data = doc.data();
 
   if (data.dr) {
-    const drDate = data.dr.toDate ? data.dr.toDate() : new Date(data.dr);
+    const drDate = data.dr.toDate() ? data.dr.toDate() : new Date(data.dr);
     const now = new Date();
     const diffMinutes = (now - drDate) / 1000 / 60;
 
@@ -796,20 +805,18 @@ function showConfirmation() {
 
   const pickupElement = document.getElementById("confirm-pickup");
 
-if (rezervacija.del.toLowerCase() === "osobno") {
-    pickupElement.textContent = `${rezervacija.del} - Kapucinska 35, 31000, Osijek`;
+if (rezervacija.del === 0) {
+    pickupElement.textContent = `Osobno preuzimanje - Kapucinska 35, 31000, Osijek`;
 } else {
-    pickupElement.textContent = rezervacija.del;
+    pickupElement.textContent = `Dostava na adresu`;
 }
 
 const paymentElement = document.getElementById("confirm-payment");
 
-if (rezervacija.pay.toLowerCase() === "preuzimanje") {
+if (rezervacija.pay === 0) {
     paymentElement.textContent = "prilikom preuzimanja";
-} else if (rezervacija.pay.toLowerCase() === "uplatnica") {
-    paymentElement.textContent = "putem uplatnice";
 } else {
-    paymentElement.textContent = rezervacija.pay;
+    paymentElement.textContent = "putem uplatnice";
 }
 
 document.getElementById("confirm-dateFrom").textContent = formatDateToDDMMYYYY(rezervacija.df);
@@ -960,7 +967,7 @@ if (missing.length > 0) {
 rezervacija.setDate(startDate, endDate);
 rezervacija.setTime(timeSelect.value);
 rezervacija.setClientInfo(firstName, lastName, phone, email, note);
-rezervacija.setDeliveryAndPayment(pickupMethod.value, paymentMethod.value);
+rezervacija.setDeliveryAndPayment(pickupMethod.value === "osobno" ? 0 : 1, paymentMethod.value === "uplatnica" ? 1 : 0);
 
 // set polja za dostavu samo ako je deliveryRadio.checked
 if (deliveryRadio.checked) {
@@ -1020,11 +1027,21 @@ document.getElementById("contact-form").addEventListener("submit", function(e) {
   e.preventDefault(); // spriječi pravo slanje forme
 });
 
-    function formatDateToDDMMYYYY(date) {
-  const d = date.getDate().toString().padStart(2, '0');
-  const m = (date.getMonth() + 1).toString().padStart(2, '0'); // mjeseci su 0-based
-  const y = date.getFullYear();
-  return `${d}.${m}.${y}`;
+function formatDateToDDMMYYYY(date) {
+    if (!date) return null;
+
+    // Ako je Firestore Timestamp, pretvori u JS Date
+    if (date.toDate && typeof date.toDate === 'function') {
+        date = date.toDate();
+    }
+
+    if (!(date instanceof Date)) return null;
+
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0'); // mjeseci su 0-indexirani
+    const yyyy = date.getFullYear();
+
+    return `${dd}.${mm}.${yyyy}`;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1489,7 +1506,7 @@ if(AppConfig.DEBUG){
   rezervacija.setCamera("Nikon Z30");
   rezervacija.setObjective("NIKKOR Z DX 16-50mm F3.5-6.3 VR");
   rezervacija.setClientInfo("Test", "Korisnik", "0912345678", "test@example.com", "Testna napomena");
-  rezervacija.setDeliveryAndPayment("osobno", "preuzimanje");
+  rezervacija.setDeliveryAndPayment(0,1);
   rezervacija.setAddress("Test ulica", "123", "31000", "Osijek");
   rezervacija.setSum(120);
 
