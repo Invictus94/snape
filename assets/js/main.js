@@ -2,6 +2,7 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
 import { addDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { existsGrad, getGradovi, izracunajDostavu } from "./distance.js";
 import { db } from "./fStore.js";
+import AppConfig from "./variables.js";
 
 class Reservation {
   constructor() {
@@ -26,6 +27,7 @@ class Reservation {
     this.pn = null;   // clientPostalNumber
     this.ct = null;   // clientCity
     this.fs = 0;   // finalSum
+    this.pe = 0;   // postEditing (0=no,1=yes)
   }
 
   // --- Getters ---
@@ -111,6 +113,10 @@ class Reservation {
     this.fs = finalSum;
   }
 
+ setPostEditing(value) {
+    this.pe = value ? 1 : 0;
+  }
+
  toFirestore() {
     return {
       df: this.df,
@@ -131,7 +137,8 @@ class Reservation {
       adr: (this.adr || this.hn || this.pn || this.ct) 
         ? `${this.adr} <> ${this.hn} <> ${this.pn} <> ${this.ct}` 
         : null,
-      fs: this.fs
+      fs: this.fs,
+      pe: this.pe
     };
   }
 
@@ -320,7 +327,6 @@ const auth = getAuth();
 
 (function() {
   "use strict";
-
 
 
 
@@ -567,6 +573,73 @@ function addCameras(excluded = []) {
   });
 }
 
+  let scrollTop = document.querySelector('.scroll-top');
+
+const termsLink = document.getElementById('terms-link');
+const privacyLink = document.getElementById('privacy-link');
+
+const termsCheckbox = document.getElementById('confirm-terms');
+const privacyCheckbox = document.getElementById('confirm-privacy');
+
+termsCheckbox.addEventListener('change', setSendBtnStyle);
+privacyCheckbox.addEventListener('change', setSendBtnStyle);
+
+function setSendBtnStyle()
+{
+  if (termsCheckbox.checked && privacyCheckbox.checked) {
+    sendBtn.classList.remove("fake-disabled");
+  }
+  else if (!sendBtn.classList.contains("fake-disabled")) {
+    sendBtn.classList.add("fake-disabled");
+  }
+}
+
+const popupOverlay = document.getElementById('popupOverlay');
+// const openPopup = document.getElementById('openPopup');
+const closePopup = document.getElementById('closePopup');
+const popupText = document.getElementById('popupText');
+
+privacyLink.addEventListener('click', () => {
+   openPopup('assets/files/privacy.txt');
+});
+
+termsLink.addEventListener('click', () => {
+   openPopup('assets/files/terms.txt');
+});
+
+function openPopup(contentPath)
+{
+   //const filePath = './files/terms.txt';
+
+  fetch(contentPath)
+    .then(response => {
+      if (!response.ok) {
+        console.error('Ne mogu učitati datoteku: ' + response.statusText);
+      }
+      return response.text();
+    })
+    .then(text => {
+      document.getElementById('popupText').textContent = text;
+         document.body.classList.add('no-scroll'); // blokira scroll na body
+          scrollTop.classList.add('d-none'); // sakrij scrollTop
+            popupOverlay.style.display = 'flex';
+
+    })
+    .catch(error => {
+      console.error('Greška:', error);
+      document.getElementById('popupText').textContent = "Greška pri učitavanju sadržaja.";
+    });
+}
+
+  // document.body.classList.add('no-scroll'); // blokira scroll na body
+  // scrollTop.classList.add('d-none'); // sakrij scrollTop
+
+closePopup.addEventListener('click', () => {
+  popupOverlay.style.display = 'none';
+  document.body.classList.remove('no-scroll');
+   scrollTop.classList.remove('d-none');
+});
+
 
 
 /* Custom */
@@ -586,9 +659,11 @@ const getStartedBtn = document.getElementById('getStartedBtn');
 getStartedBtn.addEventListener('click', (e) => {
   e.preventDefault();
 
+  //dateFromClick();
   scrollIntoView('calendar');
 hideReview();
   document.body.classList.remove("dark-background");
+
 });
 
 
@@ -710,6 +785,9 @@ checkPaymentOptions(exist);
 }});
 
 
+checkAppconfig();
+
+
 function showConfirmation() {
   document.getElementById("confirm-firstName").textContent = rezervacija.cln;
   document.getElementById("confirm-lastName").textContent = rezervacija.cls;
@@ -758,6 +836,17 @@ Ukupno: ${rezervacija.fs.toFixed(2)} €`;
   sendBtn.addEventListener("click", function(e) {
 
   e.preventDefault(); // spriječi automatsko slanje forme
+
+
+if (!termsCheckbox.checked) {
+  alert("Molimo potvrdi da si pročitao/la i prihvaćaš Uvjete korištenja.");
+  return;
+}
+
+if (!privacyCheckbox.checked) {
+  alert("Molimo potvrdi da si pročitao/la i prihvaćaš Pravila privatnosti.");
+  return;
+}
 
 
   rezervacija.canSend().then(can => {
@@ -907,11 +996,14 @@ return new Date(year, month, day);
   }
 
 
-dateFrom.addEventListener('click', () => {
+function dateFromClick(){
   calendarElement.classList.remove('collapse');
   nextToBeAssigned = 'start';
   hideReview();
+}
 
+dateFrom.addEventListener('click', () => {
+dateFromClick();
 });
 
 dateTo.addEventListener('click', () => {
@@ -1036,7 +1128,7 @@ if (nextToBeAssigned === 'start' || cellDate < startDate || !startDate) {
 
 dateFrom.value = formatDateToDDMMYYYY(startDate); // format as DD-MM-YYYY
       dateTo.value = formatDateToDDMMYYYY(endDate); // format as DD-MM-YYYY
-
+dateSum = 0;
 } else if (nextToBeAssigned === 'end') {
   if(startDate)
   {
@@ -1052,14 +1144,16 @@ dateFrom.value = formatDateToDDMMYYYY(startDate); // format as DD-MM-YYYY
 
       dateTo.value = formatDateToDDMMYYYY(endDate); // format as DD-MM-YYYY
         nextToBeAssigned = 'start'; 
+        dateSum = 0;
+
   }
  
       
 }
 
-if(!endDate){
-  dateTo.value = 'Datum povrata';
-}
+// if(!endDate){
+//   dateTo.value = 'Datum povrata';
+// }
 
 updateSelection();
 }
@@ -1076,8 +1170,11 @@ updateSelection();
 
       daysGrid.appendChild(cell);
     }
-    updateSelection();
+   updateSelection();
   }
+
+
+
 
 function updateSelection(){
  const days = document.querySelectorAll('.day');
@@ -1116,7 +1213,7 @@ let selectedDaysCount = 0;
 
 
               // Za cijene: dodaj sve dane između startDate i endDate
-      if(endDate && d >= startDate && d <= endDate || (!endDate && d.getTime() === startDate.getTime())){
+      if(endDate && d >= startDate && d <= endDate){
         dayArray.push(c);
       }
   });
@@ -1138,7 +1235,6 @@ let selectedDaysCount = 0;
     
     selectedDaysCount = dayArray.length;
 
-    dateSum = 0;
     // Izračun cijene po danu (preskoči zadnji dan)
     dayArray.forEach((c, i) => {
       const d = new Date(c.dataset.date);
@@ -1160,13 +1256,58 @@ let selectedDaysCount = 0;
 
       meta.textContent = price + '€';
 
-      dateSum += price;
 
       }
 
     });
 
+ dateSum = calculateTotal(startDate, endDate);
+
+
   }
+
+
+function calculateTotal(startDate, endDate) {
+  if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+    console.error("Unesite ispravne datume");
+    return 0;
+  }
+
+  // Ako je endDate manji od startDate, swap
+  if (endDate < startDate) [startDate, endDate] = [endDate, startDate];
+
+  let total = 0;
+  let dayCount = 0;
+
+  // Kreiramo kopiju datuma da ne mijenjamo original
+  let currentDate = new Date(startDate);
+
+  // Prvo izračunamo broj dana između start i end (isključujući endDate)
+  while (currentDate <= endDate) { 
+    dayCount++;
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Ponovo iteriramo po danima za izračun cijene
+  currentDate = new Date(startDate);
+
+  while (currentDate < endDate) { // < umjesto <=
+    let price = 60;
+
+    // Ako je više od 3 dana ukupno, vrijednost po danu je 50
+    if (dayCount > 3) price = 50;
+
+    // Subota = 6, Nedjelja = 0 → 100€
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) price = 100;
+
+    total += price;
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return total;
+}
 
 
 
@@ -1252,6 +1393,12 @@ const deliveryFields = document.getElementById('delivery-fields');
         }
     }
 
+    
+const confirmPostEditing = document.getElementById('confirm-post-editing');
+
+confirmPostEditing.addEventListener('change', ()=>{
+  rezervacija?.setPostEditing(confirmPostEditing.checked);
+});
 
 const calendarControls = document.getElementById('calendarControls');
 const availabilityButton = document.getElementById('availabilityButton');
@@ -1307,10 +1454,46 @@ if(section.classList.contains('collapse')){
   section.classList.remove('collapse');
 }
 
-  section.scrollIntoView({
+ section.scrollIntoView({
     behavior: 'smooth',
     block: 'start' // scrolla na početak sekcije
   });
+};
+
+function checkAppconfig() {
+
+  console.log("Provjera appConfigInstance.SHOW_ALL_PAGES:", AppConfig.SHOW_ALL_PAGES);
+if(!AppConfig.SHOW_ALL_PAGES) return;
+
+const sections = ['calendar', 'camera', 'extras', 'contact', 'review'];
+
+sections.forEach(element => {
+
+    let section = document.getElementById(element);
+if(section.classList.contains('collapse')){
+  section.classList.remove('collapse');
+}
+
+    document.body.classList.remove("dark-background");
+    document.body.classList.add("light-background");
+})
+
+if(AppConfig.DEBUG){
+
+
+  rezervacija.setDate(new Date(2024, 6, 10), new Date(2024, 6, 12));
+  rezervacija.setTime("09:30");
+  rezervacija.setCamera("Nikon Z30");
+  rezervacija.setObjective("NIKKOR Z DX 16-50mm F3.5-6.3 VR");
+  rezervacija.setClientInfo("Test", "Korisnik", "0912345678", "test@example.com", "Testna napomena");
+  rezervacija.setDeliveryAndPayment("osobno", "preuzimanje");
+  rezervacija.setAddress("Test ulica", "123", "31000", "Osijek");
+  rezervacija.setSum(120);
+
+  showConfirmation();
+
+
+}
 }
 
 function updateControlsState() {
@@ -1386,7 +1569,6 @@ function updateControlsState() {
   /**
    * Scroll top button
    */
-  let scrollTop = document.querySelector('.scroll-top');
 
   function toggleScrollTop() {
     if (scrollTop) {

@@ -71,6 +71,63 @@
     }
 }
 
+body.no-scroll {
+  overflow: hidden; /* onemogućava scrollanje cijele stranice */
+}
+
+/* overlay preko cijelog main */
+.popup-overlay {
+  position: fixed; /* preko cijelog prozora */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); /* prozirno siva pozadina */
+  /*display: flex;  otvoreno */
+  display: none; /* skriveno dok se ne otvori */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: #000;
+}
+
+/* popup box */
+.popup-content {
+  background: #fff;
+  padding: 40px 20px;
+  border-radius: 8px;
+  width: 90%;
+  height: 90%;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+/* X za zatvaranje */
+.popup-close {
+  position: absolute;
+  top: -10px;
+  right: 15px;
+  font-size: 50px;
+  cursor: pointer;
+  color: black;
+}
+
+.popup-text {
+  flex: 1; /* zauzima sav prostor */
+  overflow-y: scroll; /* scroll ako je previše teksta */
+  white-space: pre-wrap; /* čuva razmake i nove redove */
+  line-height: 1.5;
+}
+
+ .fake-disabled {
+    background-color: #6c757d !important; /* siva */
+    border-color: #6c757d !important;
+    opacity: 0.65;
+    cursor: not-allowed; /* pokazuje da je onemogućeno */
+  }
+
 .icon-50 {
   width: 50px;
   height: 50px;
@@ -165,6 +222,25 @@ body {
   background-color: var(--background-color);
   font-family: var(--default-font);
 }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. Wrapper koji obuhvaća sav sadržaj osim footera */
+#page-wrapper {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Glavni sadržaj da zauzima sav preostali prostor */
+#main-content {
+  flex: 1;
+}
+
 
 a {
   color: var(--accent-color);

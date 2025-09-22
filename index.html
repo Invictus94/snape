@@ -44,7 +44,7 @@
       <a href="index.html" class="logo d-flex align-items-center me-auto">
         <!-- Uncomment the line below if you also wish to use an image logo -->
         <!-- <img src="assets/img/logo.webp" alt=""> -->
-        <h1 class="sitename">Snape</h1>
+        <h1 class="sitename">FotoRent</h1>
       </a>
 
       <nav id="navmenu" class="navmenu collapse">
@@ -83,7 +83,19 @@
     </div>
   </header>
 
+  <div id="page-wrapper">
+  <div id="main-content">
+    
   <main class="main">
+
+<div id="popupOverlay" class="popup-overlay">
+  <div class="popup-content">
+    <span id="closePopup" class="popup-close text-danger">&times;</span>
+    <div class="popup-text" id="popupText">
+    </div>
+  </div>
+</div>
+
 
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
@@ -469,12 +481,48 @@
   <li><span><strong id="sum-note"></strong></span></li>
 </ul>
 
+<!-- Novi check boxovi -->
+ <div class="form-check">
+  <input class="form-check-input" type="checkbox" id="confirm-post-editing">
+  <label class="form-check-label" for="confirm-post-editing">
+    Zainteresiran/a sam za stručnu obradu fotografija u profesionalnim alatima.
+  </label>
+</div>
 
-    <div class="text-center mb-3">
-      <button id="send-btn" type="submit" class="btn btn-primary">Pošalji</button>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" id="confirm-terms">
+
+  <label class="form-check-label" for="confirm-terms">
+     ← Prihvaćam
+  </label>
+
+  <!-- Izdvojeni span izvan labela -->
+  <span style="color: blue; text-decoration: underline; font-style: italic; cursor: pointer;" id="terms-link">
+    uvjete korištenja
+  </span>
+</div>
+
+
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" id="confirm-privacy">
+
+  <label class="form-check-label" for="confirm-privacy">
+     ← Slažem se s 
+  </label>
+
+  <!-- Izdvojeni span izvan labela -->
+  <span style="color: blue; text-decoration: underline; font-style: italic; cursor: pointer;" id="privacy-link">
+    politikom privatnosti
+  </span>
+</div>
+
+
+
+    <div class="text-center mt-4 mb-0">
+      <button id="send-btn" type="submit" class="btn btn-primary fake-disabled">Pošalji</button>
     </div>
 
-  <p id="final-message"></p>
+  <p id="final-message" class="mt-4"></p>
 </div>
 
 
@@ -1357,6 +1405,8 @@
 
   </main>
 
+    </div>
+
   <footer id="footer" class="footer pb-0">
 
     <div class="footer-newsletter collapse">
@@ -1424,8 +1474,8 @@
       </div>
     </div>
 
-    <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">SNAPE</strong> <span>All Rights Reserved</span></p>
+    <div class="container copyright text-center mt-1 pb-1">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">FotoRent</strong> <span>All Rights Reserved</span></p>
       <div class="credits">
         <!-- All the links in the footer should remain intact. -->
         <!-- You can delete the links only if you've purchased the pro version. -->
@@ -1436,6 +1486,8 @@
     </div>
 
   </footer>
+
+  </div>
 
   <!-- Scroll Top -->
   <a href="#calendar" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
