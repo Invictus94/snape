@@ -462,7 +462,7 @@ function addObjectives(excluded = []) {
       const objective = objectiveNames[index].textContent;
       rezervacija.setObjective(objective);
       scrollIntoView('contact');
-      hideReview();
+      hideView('review');
     });
   });
 }
@@ -586,7 +586,7 @@ stepsFeatures.style.cursor = "pointer";
         const cameraName = stepsContent.querySelector("h3").textContent;
         rezervacija.setCamera(cameraName);
         scrollIntoView('extras');
-        hideReview();
+        hideView('review');
       });
     });
   });
@@ -680,7 +680,7 @@ getStartedBtn.addEventListener('click', (e) => {
 
   //dateFromClick();
   scrollIntoView('calendar');
-hideReview();
+hideView('review');
   document.body.classList.remove("dark-background");
 
 });
@@ -712,7 +712,7 @@ inputIds.forEach(id => {
   if (el) {
     // Za tekstualne inpute i textarea
     if (el.tagName === "INPUT" && el.type !== "radio" || el.tagName === "TEXTAREA") {
-      el.addEventListener("input", hideReview);
+      el.addEventListener("input", () => hideView('review'));
     } else {
       // Za radio i checkbox
         el.addEventListener("change", () => {
@@ -730,7 +730,7 @@ if(pickup){
 
     
 
-          hideReview();
+          hideView('review');
         });
     }
   }
@@ -1016,7 +1016,7 @@ return new Date(year, month, day);
 function dateFromClick(){
   calendarElement.classList.remove('collapse');
   nextToBeAssigned = 'start';
-  hideReview();
+  hideView('review');
 
   scrollIntoView('calendar');
 }
@@ -1028,7 +1028,7 @@ dateFromClick();
 dateTo.addEventListener('click', () => {
   calendarElement.classList.remove('collapse');
   nextToBeAssigned = 'end';
-  hideReview();
+  hideView('review');
   scrollIntoView('calendar');
 
 });
@@ -1148,7 +1148,12 @@ if (today.getDay() === 5) {increment = 3;}
         cell.classList.add('enabled');
         cell.addEventListener('click', ()=>{
 
-          hideReview();
+          hideView('review');
+          hideView('camera');
+          hideView('extras');
+          hideView('contact');
+
+          scrollIntoView('calendar');
 
 if (nextToBeAssigned === 'start' || cellDate < startDate || !startDate) {
   startDate = cellDate;
@@ -1436,7 +1441,7 @@ const availabilityButton = document.getElementById('availabilityButton');
 const timeSelect = document.getElementById('timeSelect');
 
 timeSelect.addEventListener('change', ()=>{
-  hideReview();
+  hideView('review');
 });
 
 availabilityButton.addEventListener('click', ()=>{
@@ -1468,8 +1473,8 @@ const objectivesArray = data.map(r => r.on);
   }
 })
 
-function hideReview() {
-  const reviewSection = document.getElementById('review');
+function hideView(viewId) {
+  const reviewSection = document.getElementById(viewId);
   if (!reviewSection.classList.contains('collapse')) {
     reviewSection.classList.add('collapse');
   }
