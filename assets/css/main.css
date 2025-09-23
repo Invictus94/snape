@@ -351,6 +351,25 @@ h6 {
   background: color-mix(in srgb, var(--accent-color), transparent 15%);
 }
 
+.social-icon {
+  font-size: 1.5rem;
+  display: inline-block; /* obavezno da radi transform */
+}
+
+@keyframes bounce {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(-12px); }
+  40%  { transform: translateY(0); }
+  55%  { transform: translateY(-6px); }
+  70%  { transform: translateY(0); }
+  85%  { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+.social-icon.bouncing {
+  animation: bounce 0.9s cubic-bezier(.28,.84,.42,1); /* gumasti easing */
+}
+
 /* @media (max-width: 1200px) {
   .header .logo {
     order: 1;

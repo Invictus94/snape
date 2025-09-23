@@ -308,7 +308,7 @@ const cameras = [
          features: [
       { icon: "bi-camera-fill", cameraFeature: "Vrhunska fotografija" },
       { icon: "bi-wifi", cameraFeature: "Bežični prijenos slike" },
-      { icon: "bi-stars", cameraFeature: "Odlično snimanje pri slabom svjetlu" }
+      { icon: "bi-sun-fill", cameraFeature: "Integrirani bljeskalica" }
     ]
   }
 ];
@@ -339,6 +339,10 @@ const rezervacija = new Reservation();
 
 
 const auth = getAuth();
+
+
+
+
 
 (function() {
   "use strict";
@@ -1064,6 +1068,25 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextBtn = document.getElementById('nextBtn');
 
   let viewDate = new Date();
+
+
+  
+ const icons = document.querySelectorAll(".social-icon");
+
+  function randomBounce() {
+    const randomIndex = Math.floor(Math.random() * icons.length);
+    const icon = icons[randomIndex];
+
+    icon.classList.add("bouncing");
+
+    setTimeout(() => icon.classList.remove("bouncing"), 1000);
+
+    const nextDelay = (10 + Math.random() * 5) * 1000;
+    setTimeout(randomBounce, nextDelay);
+  }
+
+  setTimeout(randomBounce, 3000);
+
 
   function populateMonthYearControls(){
     monthSelect.innerHTML = '';
